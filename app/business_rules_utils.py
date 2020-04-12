@@ -7,6 +7,24 @@ import logging
 import json
 from db_utils import DB
 
+
+import os
+os.environ['HOST_IP'] = '35.173.139.208'
+os.environ['LOCAL_DB_USER'] = 'root'
+os.environ['LOCAL_DB_PASSWORD'] = 'AlgoTeam123'
+os.environ['LOCAL_DB_PORT'] = '3306'
+
+tenant_id = 'deloitte.acelive.ai'
+
+db_config = {
+    'host': os.environ['HOST_IP'],
+    'user': os.environ['LOCAL_DB_USER'],
+    'password': os.environ['LOCAL_DB_PASSWORD'],
+    'port': os.environ['LOCAL_DB_PORT']
+}
+
+
+
 def partial_match(input_string, matchable_strings, threshold=75):
     """Returns the most similar string to the input_string from a list of strings.
     Args:
