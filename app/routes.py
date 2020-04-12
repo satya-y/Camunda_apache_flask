@@ -8,6 +8,8 @@ from flask_cors import CORS
 import ast
 from datetime import date,datetime
 
+app = Flask(__name__)
+cors = CORS(app)
 
 @app.route('/')
 @app.route('/index')
@@ -25,9 +27,9 @@ def get_data_route():
     database = params.get('database', None)
     table = params.get('table', None)
     case_id = params.get('case_id', None)
-    case_id_based = params.get('case_id_base', True)
+    case_id_based = params.get('case_id_based',True)
     view = params.get('view', 'records')
-    result = get_data(tenant_id, database, table, case_id, case_id_based=True, view='records')
+    result = get_data(tenant_id, database, table, case_id, case_id_based, view='records')
     return jsonify(result)
 
 @app.route('/save_data')
@@ -38,9 +40,9 @@ def save_data_route():
     table = params.get('table', None)
     data = params.get('data', None)
     case_id = params.get('case_id', None)
-    case_id_based = params.get('case_id_base', True)
+    case_id_based = params.get('case_id_based', True)
     view = params.get('view', 'records')
-    result = save_data(tenant_id, database, table, data, case_id, case_id_based=True, view='records')
+    result = save_data(tenant_id, database, table, data, case_id, case_id_based, view='records')
     return jsonify(result)
 
 @app.route('/partial_match')
@@ -58,5 +60,8 @@ def date_transform_route():
     date = params.get('date', None)
     input_format = params.get('input_format', 'dd-mm-yyyy')
     output_format = params.get('output_format', 'dd-mm-yyyy')
-    result = date_transform(date, input_format='dd-mm-yyyy', output_format='dd-mm-yyyy')
+    result = date_transform(date, input_format, output_format)
     return jsonify(result)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port='6767', debug=True, threaded=True)

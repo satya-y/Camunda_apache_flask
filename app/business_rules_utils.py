@@ -78,13 +78,13 @@ def date_transform(date, input_format='dd-mm-yyyy', output_format='dd-mm-yyyy'):
         if flag is True: data contains the key value and value is the converted date.
         if flag is False: data contains the error_msg say why its failed.
     Example:
-            x = date_transform('23-03-2020','dd-mmm-yyyy','dd-mm-yy')"""
+        x = date_transform('23-03-2020','dd-mmm-yyyy','dd-mm-yy')"""
     
     logging.info(f"got input date is : {date}")
     logging.info(f"got input format is : {input_format}")
     logging.info(f"got expecting output format is : {output_format}")
     result = {}
-    date_format_mapping = {'dd-mm-yyyy':'%d-%m-%Y','dd-mm-yy':'%d-%m-%y'}
+    date_format_mapping = {'dd-mm-yyyy':'%d-%m-%Y','dd-mmm-yyyy':'%d-%b-%Y','dd-MMMM-yyyy':'%d-%B-%Y','dd-mm-yyyy':'%d-%m-%Y','dd-MMM-yy':'%d-%b-%y','dd-mmmm-yy':'%d-%B-%y','mmm-dd-yyyy':'%d-%m-%Y','yyyy-MMM-dd':'%Y-%b-%d','yy-dd-mmm':'%y-%d-%b','mmm-dd-yy':'%b-%d-%y','yy-mmm-dd':'%y-%b-%d','yy-mm-dd':'%y-%m-%d','dd-yyyy-mmmm':'%d-%Y-%B','dd-mm-yy':'%d-%m-%y','mm-dd-yy':'%m-%d-%y','yy-dd-mm':'%y-%d-%m','mm-dd-yyyy':'%m-%d-%Y','yyyy-dd-mm':'%Y-%d-%m','yyyy-mm-dd':'%Y-%m-%d','mmmm-dd-yy':'%B-%d-%y','yy-dd-mmmm':'%y-%d-%B','yy-mmmm-dd':'%y-%B-%d','mmmm-dd-yyyy':'%B-%d-%Y','yyyy-dd-mmmm':'%Y-%d-%B','yyyy-mmmm-dd':'%Y-%B-%d','yyyy-dd-mmm':'%Y-%d-%b'}
     try:
         input_format_ = date_format_mapping[input_format]
         output_format_ = date_format_mapping[output_format]
@@ -119,7 +119,7 @@ def date_transform(date, input_format='dd-mm-yyyy', output_format='dd-mm-yyyy'):
     
     return result
 
-def get_data(tenant_id, database, table, case_id, case_id_based=True, view='records'):
+def get_data(tenant_id, database, table, case_id, case_id_based=True , view='records'):
     """give the data from database
     Args:
         
@@ -132,6 +132,7 @@ def get_data(tenant_id, database, table, case_id, case_id_based=True, view='reco
             x = get_data('invesco.acelive.ai','extraction','ocr','INV4D15EFC')"""
     result = {}
     db = DB(database, tenant_id = tenant_id, **db_config)
+    logging.info(f"case_id based: {case_id_based}")
     try:
         if case_id_based:
             query = f"SELECT * from `{table}` WHERE `case_id` = '{case_id}'"
@@ -170,7 +171,10 @@ def save_data(tenant_id, database, table, data, case_id, case_id_based=True, vie
         case_id (str) -> case_id for which we have to bring the data from the table.
         data (dict) -> column_value map or a record in the database.
     Returns:
-        result (dict)"""
+        result (dict)
+    Example:
+        data1 = {'ocr':{'comments':'testing','assessable_value':1000}}
+        save_data(tenant_id='deloitte.acelive.ai', database='extraction', table='None', data=data1, case_id='DEL754C18D_test', case_id_based = True, view='records')"""
     logging.info(f"tenant_id got is : {tenant_id}")
     logging.info(f"database got is : {database}")
     logging.info(f"table name got is : {table}")
@@ -184,7 +188,7 @@ def save_data(tenant_id, database, table, data, case_id, case_id_based=True, vie
 
             db_config['tenant_id'] = tenant_id
             if database == 'extraction':
-                extraction_db = DB('extractionss', **db_config) # only in ocr or process_queue we are updating
+                extraction_db = DB('extraction', **db_config) # only in ocr or process_queue we are updating
             elif database == 'queues':
                 queue_db = DB('queues', **db_config) # only in ocr or process_queue we are updating
 
@@ -198,14 +202,13 @@ def save_data(tenant_id, database, table, data, case_id, case_id_based=True, vie
             logging.error(e)
             result["flag"]=False,
             result['data'] = {'reason':f'Cannot update the database','error_msg':str(e)}
-            
+            return result
         result['flag']=True
         result['data']= data
         return result
-    
-    
+
     else:
-        logging.info(f"data to save is case_id based data.")
+        logging.info(f"data to save is master based data.")
         try:
             db_config['tenant_id'] = tenant_id
             extraction_db = DB('extraction', **db_config) # only in ocr or process_queue we are updating
